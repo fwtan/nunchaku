@@ -66,15 +66,15 @@ def from_pretrained(pretrained_model_name_or_path: str | os.PathLike, **kwargs) 
         user_agent={"diffusers": __version__, "file_type": "model", "framework": "pytorch"},
         **kwargs,
     )
-    # transformer: nn.Module = FluxTransformer2DModel.from_config(config).to(kwargs.get("torch_dtype", torch.bfloat16))
-    # state_dict = load_file(os.path.join(qmodel_path, "unquantized_layers.safetensors"))
-    # transformer.load_state_dict(state_dict, strict=True)
+    transformer: nn.Module = FluxTransformer2DModel.from_config(config).to(kwargs.get("torch_dtype", torch.bfloat16))
+    state_dict = load_file(os.path.join(qmodel_path, "unquantized_layers.safetensors"))
+    transformer.load_state_dict(state_dict, strict=False)
 
-    # pipeline = FluxPipeline.from_pretrained(pretrained_model_name_or_path, transformer=transformer, **kwargs)
-    pipeline = FluxPipeline.from_pretrained(pretrained_model_name_or_path, **kwargs)
+    pipeline = FluxPipeline.from_pretrained(pretrained_model_name_or_path, transformer=transformer, **kwargs)
+    # pipeline = FluxPipeline.from_pretrained(pretrained_model_name_or_path, **kwargs)
     m = load_quantized_model(
-        # os.path.join(qmodel_path, "transformer_blocks.safetensors"),
-        qmodel_path,
+        os.path.join(qmodel_path, "transformer_blocks.safetensors"),
+        # qmodel_path,
         0 if qmodel_device.index is None else qmodel_device.index,
     )
     inject_pipeline(pipeline, m, qmodel_device)
